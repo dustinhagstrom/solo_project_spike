@@ -4,8 +4,7 @@ To explore AWS S3 as a viable option for image storage and retrieval to lessen t
 ## Requirements to reproduce my process
 - You must have an AWS account, visit this link to set that up https://docs.aws.amazon.com/lookout-for-equipment/latest/ug/getting-started-brain.html
 - Some familiarity with basic computer networking communications
-- Nice to have:
-  - AWS EC2 instance, so that S3 doesn't have to be public-facing
+- AWS EC2 instance, so that S3 doesn't have to be public-facing
 
 ## Steps
 1. Learn about S3 buckets and what problems they can help solve https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
@@ -61,9 +60,16 @@ To explore AWS S3 as a viable option for image storage and retrieval to lessen t
    - I downloaded NVM to manage my Node.js 
 7. I am using the latest version of Node.js at the time of this writing, v20.10.0
 8. Create a new directory for your sample project
-9. Install the necessary code to interact with S3 only https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3/
-   - I used: *>npm i @aws-sdk/client-s3*
-10. Let's put a sample image onto our AWS EC2 instance using the secure copy protocol (for Linux based EC2 instances). From the host computer where the file is located:
+9. Install the necessary code to interact with S3 for file uploading https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/s3/
+   - I used:
+     - *>npm i @aws-sdk/client-s3* for the S3 client library
+     - *>npm i @aws-sdk/lib-storage* for the uploading of streams of data (images) 
+     - *>npm i @aws-sdk/s3-request-presigner* to get a pre-signed url that allows temporary public access to an object that is stored in a private S3 bucket 
+10. Let's put a sample image onto our AWS EC2 instance using the secure copy protocol (for Unix-based OS where the image is stored). From the host computer where the file is located:
     - **scp -r -i \<EC2 access key> \<image file name> ec2-user@ec2-###-###-###-###.compute-1.amazonaws.com:~/**
-    - This will copy the file from the local computer to the home directory of the Linux EC2 instance
-11. 
+    - This will copy the file from the local computer to the root directory of the Linux EC2 instance. The root file path, '~/' is to the right of the ':' in the previous command.
+11. To write the actual code for the upload, you need to use the AWS SDK API and to view examples https://github.com/awsdocs/aws-doc-sdk-examples/tree/main/javascriptv3
+12. I went to the API and the code examples, but these locations contain the entirety of the programmatic access controls to AWS services. So, there is a lot of material to parse through here! To get specific examples and explanations I used ChatGPT to help me cut down a lot of time. The code in upload.mjs, getUrl.mjs, and delete.mjs is ChatGPT generated, but I put in a few comments to help clarify what is going on. It is important to note that any programmatic actions on S3 buckets must be allowed in the policy that is wrapped into the role that is given to your EC2, otherwise, it will not work.
+    - *notice the file extension of 'mjs' which allows 'import' syntax vice 'require syntax'*
+    - This syntax is used in the code examples for Javascript V3 AWS examples.
+13. And that's it, we were able to give our EC2 instance access to a private S3 bucket and we were able to upload an image, get a pre-signed URL that we could through into an image HTML tag, and we were then able to delete that image from the S3 bucket.  
